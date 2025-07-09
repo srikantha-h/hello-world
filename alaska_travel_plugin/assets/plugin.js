@@ -3,10 +3,13 @@
  */
 
 jQuery(document).ready(function($) {
-    
+
     // Photo upload functionality
-    $('#photo-upload-form').on('submit', function(e) {
-        e.preventDefault();
+    if (!alaska_travel_ajax.is_logged_in) {
+        $('#photo-upload-form').remove();
+    } else {
+        $('#photo-upload-form').on('submit', function(e) {
+            e.preventDefault();
         
         var albumUrl = $('#google_album_url').val();
         var travelDayId = $(this).data('travel-day-id') || get_the_ID();
@@ -35,7 +38,8 @@ jQuery(document).ready(function($) {
                 $('#upload-results').html('<p style="color: red;">Error uploading photos. Please try again.</p>');
             }
         });
-    });
+        });
+    }
     
     // Photo filtering functionality
     $('.photo-filter-form').on('submit', function(e) {
