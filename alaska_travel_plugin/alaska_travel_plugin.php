@@ -119,6 +119,15 @@ class AlaskaTravelPlugin {
             'alaska-travel-travelers',
             array($this, 'travelers_admin_page')
         );
+
+        add_submenu_page(
+            'alaska-travel-admin',
+            'Unassigned Albums',
+            'Unassigned Albums',
+            'manage_options',
+            'alaska-travel-unassigned-albums',
+            array($this, 'unassigned_albums_page')
+        );
     }
     
     public function admin_page() {
@@ -204,7 +213,7 @@ class AlaskaTravelPlugin {
     
     public function photos_admin_page() {
         global $wpdb;
-        
+
         $table_name = $wpdb->prefix . 'alaska_travel_photos';
         $photos = $wpdb->get_results("SELECT * FROM $table_name ORDER BY upload_date DESC LIMIT 50");
         
@@ -246,6 +255,75 @@ class AlaskaTravelPlugin {
                             <td>
                                 <a href="#" class="button button-small delete-photo" data-photo-id="<?php echo $photo->id; ?>">Delete</a>
                             </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+    }
+
+    public function unassigned_albums_page() {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'alaska_travel_photos';
+
+        // Handle form submission
+        if (isset($_POST['assign_album']) && check_admin_referer('assign_album_nonce')) {
+            $album_id = intval($_POST['album_id']);
+            $travel_day_id = intval($_POST['travel_day_id']);
+            $wpdb->update(
+                $table_name,
+                array('travel_day_id' => $travel_day_id),
+                array('id' => $album_id),
+                array('%d'),
+                array('%d')
+            );
+
+            echo '<div class="updated notice notice-success is-dismissible"><p>Album updated.</p></div>';
+        }
+
+        $albums = $wpdb->get_results("SELECT * FROM $table_name WHERE travel_day_id = 0 ORDER BY upload_date DESC");
+        $travel_days = get_posts(array(
+            'post_type' => 'travel_day',
+            'numberposts' => -1,
+            'post_status' => 'publish',
+            'orderby' => 'title',
+            'order' => 'ASC'
+        ));
+
+        ?>
+        <div class="wrap">
+            <h1>Unassigned Albums</h1>
+
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th>Album URL</th>
+                        <th>Assign Travel Day</th>
+                        <th>Caption</th>
+                        <th>Upload Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($albums as $album): ?>
+                        <tr>
+                            <td><a href="<?php echo esc_url($album->photo_url); ?>" target="_blank"><?php echo esc_html($album->photo_url); ?></a></td>
+                            <td>
+                                <form method="post">
+                                    <?php wp_nonce_field('assign_album_nonce'); ?>
+                                    <input type="hidden" name="album_id" value="<?php echo $album->id; ?>">
+                                    <select name="travel_day_id" required>
+                                        <option value="">Select Travel Day</option>
+                                        <?php foreach ($travel_days as $day): ?>
+                                            <option value="<?php echo $day->ID; ?>"><?php echo esc_html($day->post_title); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <input type="submit" name="assign_album" class="button button-primary" value="Update">
+                                </form>
+                            </td>
+                            <td><?php echo esc_html($album->caption); ?></td>
+                            <td><?php echo $album->upload_date; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
