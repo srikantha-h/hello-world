@@ -18,7 +18,6 @@ class AlaskaTravelPlugin {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('wp_ajax_upload_google_photos', array($this, 'handle_google_photos_upload'));
-        add_action('wp_ajax_nopriv_upload_google_photos', array($this, 'handle_google_photos_upload'));
         add_action('wp_ajax_bulk_import_photos', array($this, 'bulk_import_photos'));
         
         // Remove conflicting shortcodes - these are handled by the theme
@@ -60,7 +59,8 @@ class AlaskaTravelPlugin {
         
         wp_localize_script('jquery', 'alaska_travel_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('alaska_travel_nonce')
+            'nonce' => wp_create_nonce('alaska_travel_nonce'),
+            'is_logged_in' => is_user_logged_in()
         ));
     }
     
@@ -368,6 +368,10 @@ class AlaskaTravelPlugin {
         $album_url = sanitize_url($_POST['album_url']);
         $travel_day_id = intval($_POST['travel_day_id']);
         $user_id = get_current_user_id();
+
+        if (!current_user_can('edit_post', $travel_day_id)) {
+            wp_die('Insufficient permissions.');
+        }
         
         if (!$album_url || !$travel_day_id) {
             wp_die('Invalid data provided.');
