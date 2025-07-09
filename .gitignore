@@ -1,0 +1,5 @@
+# Ignore macOS Finder metadata
+.DS_Store
+
+# Ignore any zip archives
+*.zip
