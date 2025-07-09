@@ -104,5 +104,4 @@ get_header(); ?>
         <?php get_sidebar(); ?>
     </aside>
 </main>
-
-<?php get_footer(); ?>
+<?php get_footer();

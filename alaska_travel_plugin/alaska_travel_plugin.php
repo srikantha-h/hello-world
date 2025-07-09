@@ -651,4 +651,3 @@ function alaska_travel_post_states($post_states, $post) {
     return $post_states;
 }
 add_filter('display_post_states', 'alaska_travel_post_states', 10, 2);
-?>

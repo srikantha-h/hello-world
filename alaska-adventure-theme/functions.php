@@ -1237,5 +1237,3 @@ function alaska_travel_filter_photos() {
 }
 add_action('wp_ajax_alaska_travel_filter_photos', 'alaska_travel_filter_photos');
 add_action('wp_ajax_nopriv_alaska_travel_filter_photos', 'alaska_travel_filter_photos');
-
-?>
